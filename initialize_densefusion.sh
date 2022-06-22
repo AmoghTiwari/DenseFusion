@@ -1,5 +1,5 @@
-mkdir -p /ssd_scratch/cvit/amoghtiwari/DenseFusion/
-cd /ssd_scratch/cvit/amoghtiwari/DenseFusion/
+mkdir -p /ssd_scratch/cvit/amoghtiwari/densefusion/
+cd /ssd_scratch/cvit/amoghtiwari/densefusion/
 mkdir data
 mkdir checkpoints
 
