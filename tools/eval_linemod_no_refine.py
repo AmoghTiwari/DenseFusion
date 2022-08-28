@@ -93,7 +93,7 @@ for i, data in enumerate(testdataloader, 0):
     my_t = (points.view(bs * num_points, 1, 3) + pred_t)[which_max[0]].view(-1).cpu().data.numpy()
     my_pred = np.append(my_r, my_t)
 
-    
+    """
     for ite in range(0, iteration):
         T = Variable(torch.from_numpy(my_t.astype(np.float32))).cuda().view(1, 3).repeat(num_points, 1).contiguous().view(1, num_points, 3)
         my_mat = quaternion_matrix(my_r)
@@ -120,7 +120,7 @@ for i, data in enumerate(testdataloader, 0):
         my_t = my_t_final
 
     # Here 'my_pred' is the final pose estimation result after refinement ('my_r': quaternion, 'my_t': translation)
-
+    """
     model_points = model_points[0].cpu().detach().numpy()
     my_r = quaternion_matrix(my_r)[:3, :3]
     pred = np.dot(model_points, my_r.T) + my_t
@@ -153,11 +153,11 @@ for i in range(num_objects):
     fw.write('Object {0} success rate: {1}\n'.format(objlist[i], float(success_count[i]) / num_count[i]))
 print('ALL success rate: {0}'.format(float(sum(success_count)) / sum(num_count)))
 fw.write('ALL success rate: {0}\n'.format(float(sum(success_count)) / sum(num_count)))
-obj_ids = [0,1,2,4,5,6,8,9,10,11,12,13,14]
+
+# obj_ids = [0,1,2,4,5,6,8,9,10,11,12,13,14]
+obj_ids = objlist
 for i in range(len(obj_ids)):
     print(f"obj_id: {obj_ids[i]}; Less than two percentage: {100*less_than_two[i] / total[i]}")
     fw.write(f"obj_id: {obj_ids[i]}; Less than two percentage: {100*less_than_two[i] / total[i]}")
 
-print("Average less than two: ", sum(less_than_two) / sum(total))
-fw.write("Average less than two:", sum(less_than_two) / sum(total))
 fw.close()

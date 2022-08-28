@@ -44,7 +44,6 @@ parser.add_argument('--nepoch', type=int, default=500, help='max number of epoch
 parser.add_argument('--resume_posenet', type=str, default = '',  help='resume PoseNet model')
 parser.add_argument('--resume_refinenet', type=str, default = '',  help='resume PoseRefineNet model')
 parser.add_argument('--start_epoch', type=int, default = 1, help='which epoch to start')
-parser.add_argument('--outf', type=str, default = '', help='directory to save trained models')
 opt = parser.parse_args()
 
 
@@ -56,13 +55,13 @@ def main():
     if opt.dataset == 'ycb':
         opt.num_objects = 21 #number of object classes in the dataset
         opt.num_points = 1000 #number of points on the input pointcloud
-        # opt.outf = 'trained_models/ycb' #folder to save trained models
+        opt.outf = 'trained_models/ycb' #folder to save trained models
         opt.log_dir = 'experiments/logs/ycb' #folder to save logs
         opt.repeat_epoch = 1 #number of repeat times for one epoch training
     elif opt.dataset == 'linemod':
         opt.num_objects = 13
         opt.num_points = 500
-        # opt.outf = 'trained_models/linemod'
+        opt.outf = 'trained_models/linemod'
         opt.log_dir = 'experiments/logs/linemod'
         opt.repeat_epoch = 20
     else:
@@ -113,8 +112,7 @@ def main():
 
     if opt.start_epoch == 1:
         for log in os.listdir(opt.log_dir):
-            if not os.path.isdir(os.path.join(opt.log_dir, log)):
-                os.remove(os.path.join(opt.log_dir, log))
+            os.remove(os.path.join(opt.log_dir, log))
     st_time = time.time()
 
     for epoch in range(opt.start_epoch, opt.nepoch):
@@ -140,7 +138,7 @@ def main():
                                                                  Variable(idx).cuda()
                 pred_r, pred_t, pred_c, emb = estimator(img, points, choose, idx)
                 loss, dis, new_points, new_target = criterion(pred_r, pred_t, pred_c, target, model_points, idx, points, opt.w, opt.refine_start)
-
+                
                 if opt.refine_start:
                     for ite in range(0, opt.iteration):
                         pred_r, pred_t = refiner(new_points, emb, idx)
@@ -153,7 +151,7 @@ def main():
                 train_count += 1
 
                 if train_count % opt.batch_size == 0:
-                    logger.info('Train time {0} Epoch {1} Batch {2} Frame {3} Avg_dis:{4} Loss:{5}'.format(time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - st_time)), epoch, int(train_count / opt.batch_size), train_count, train_dis_avg / opt.batch_size, loss))
+                    logger.info('Train time {0} Epoch {1} Batch {2} Frame {3} Avg_dis:{4}'.format(time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - st_time)), epoch, int(train_count / opt.batch_size), train_count, train_dis_avg / opt.batch_size))
                     optimizer.step()
                     optimizer.zero_grad()
                     train_dis_avg = 0

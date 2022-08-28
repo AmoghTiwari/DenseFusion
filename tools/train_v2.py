@@ -174,6 +174,9 @@ def main():
         estimator.eval()
         refiner.eval()
 
+        less_than_two = np.zeros((15,))
+        total = np.zeros((15,))
+
         for j, data in enumerate(testdataloader, 0):
             points, choose, img, target, model_points, idx = data
             points, choose, img, target, model_points, idx = Variable(points).cuda(), \
@@ -191,9 +194,18 @@ def main():
                     dis, new_points, new_target = criterion_refine(pred_r, pred_t, new_target, model_points, idx, new_points)
 
             test_dis += dis.item()
+            if dis.item() < 0.02:
+                less_than_two[idx]+= 1
+            total[idx]+= 1
+            
             logger.info('Test time {0} Test Frame No.{1} dis:{2}'.format(time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - st_time)), test_count, dis))
 
             test_count += 1
+        
+        obj_ids = [0,1,4,5,6,8,9,10,11,12,13,14]
+        logger.info("Printing object wise 2cm metric below: ")
+        for i in range(len(obj_ids)):
+            logger.info(f"obj_id: {obj_ids[i]}; Success Rate: {100*less_than_two[i] / total[i]}")
 
         test_dis = test_dis / test_count
         logger.info('Test time {0} Epoch {1} TEST FINISH Avg dis: {2}'.format(time.strftime("%Hh %Mm %Ss", time.gmtime(time.time() - st_time)), epoch, test_dis))
@@ -204,7 +216,7 @@ def main():
             else:
                 torch.save(estimator.state_dict(), '{0}/pose_model_{1}_{2}.pth'.format(opt.outf, epoch, test_dis))
             print(epoch, '>>>>>>>>----------BEST TEST MODEL SAVED---------<<<<<<<<')
-
+        
         if best_test < opt.decay_margin and not opt.decay_start:
             opt.decay_start = True
             opt.lr *= opt.lr_rate

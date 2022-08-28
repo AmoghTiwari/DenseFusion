@@ -63,11 +63,6 @@ print(diameter)
 
 success_count = [0 for i in range(num_objects)]
 num_count = [0 for i in range(num_objects)]
-
-less_than_two = np.zeros((15,))
-total = np.zeros((15,))
-
-
 fw = open('{0}/eval_result_logs.txt'.format(output_result_dir), 'w')
 
 for i, data in enumerate(testdataloader, 0):
@@ -93,7 +88,6 @@ for i, data in enumerate(testdataloader, 0):
     my_t = (points.view(bs * num_points, 1, 3) + pred_t)[which_max[0]].view(-1).cpu().data.numpy()
     my_pred = np.append(my_r, my_t)
 
-    
     for ite in range(0, iteration):
         T = Variable(torch.from_numpy(my_t.astype(np.float32))).cuda().view(1, 3).repeat(num_points, 1).contiguous().view(1, num_points, 3)
         my_mat = quaternion_matrix(my_r)
@@ -142,10 +136,6 @@ for i, data in enumerate(testdataloader, 0):
     else:
         print('No.{0} NOT Pass! Distance: {1}'.format(i, dis))
         fw.write('No.{0} NOT Pass! Distance: {1}\n'.format(i, dis))
-    if dis < 0.02:
-        less_than_two[idx]+= 1
-    total[idx]+= 1
-    
     num_count[idx[0].item()] += 1
 
 for i in range(num_objects):
@@ -153,11 +143,4 @@ for i in range(num_objects):
     fw.write('Object {0} success rate: {1}\n'.format(objlist[i], float(success_count[i]) / num_count[i]))
 print('ALL success rate: {0}'.format(float(sum(success_count)) / sum(num_count)))
 fw.write('ALL success rate: {0}\n'.format(float(sum(success_count)) / sum(num_count)))
-obj_ids = [0,1,2,4,5,6,8,9,10,11,12,13,14]
-for i in range(len(obj_ids)):
-    print(f"obj_id: {obj_ids[i]}; Less than two percentage: {100*less_than_two[i] / total[i]}")
-    fw.write(f"obj_id: {obj_ids[i]}; Less than two percentage: {100*less_than_two[i] / total[i]}")
-
-print("Average less than two: ", sum(less_than_two) / sum(total))
-fw.write("Average less than two:", sum(less_than_two) / sum(total))
 fw.close()
